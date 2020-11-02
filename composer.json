@@ -1,0 +1,33 @@
+{
+    "name": "dominicwatts/missingmedia",
+    "description": "Scan and dump media gallery entries for images that are missing due to migration or data loss",
+    "type": "magento2-module",
+    "license": "OSL-3.0",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Dominic",
+            "email": "dominic@xigen.co.uk"
+        }
+    ],
+    "minimum-stability": "dev",
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.magento.com/"
+        }
+    ],
+    "require": {
+        "magento/framework": "*",
+        "php": "~7.1.0||~7.2.0||~7.3.0",
+        "symfony/console": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Xigen\\MissingMedia\\": ""
+        },
+        "files": [
+            "registration.php"
+        ]
+    }
+}
