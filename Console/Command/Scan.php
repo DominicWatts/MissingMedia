@@ -95,6 +95,11 @@ class Scan extends Command
     private $resource;
 
     /**
+     * @var string
+     */
+    private $exportPath;
+
+    /**
      * Scan function
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Framework\App\State $state
