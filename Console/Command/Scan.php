@@ -175,7 +175,7 @@ class Scan extends Command
         if ($output->getVerbosity() !== OutputInterface::VERBOSITY_NORMAL) {
             $progress->setOverwrite(false);
             $table = new Table($this->output);
-            $table->setHeaders(['SKU', 'Path']);
+            $table->setHeaders(['SKU', 'EntityId', 'ValueId','Asset', 'Path']);
         }
 
         $missing = [];
@@ -195,12 +195,18 @@ class Scan extends Command
                 if (!$this->file->isExists($this->imagePath . $mediaValue)) {
                     $missing[] = [
                         'sku' => $sku,
+                        'entity_id' => $entry['entity_id'] ?? null,
+                        'value_id' => $mediaFetch['value_id'] ?? null,
+                        'asset' => $mediaValue,
                         'path' => $this->imagePath . $mediaValue
                     ];
 
                     if ($output->getVerbosity() !== OutputInterface::VERBOSITY_NORMAL) {
                         $table->addRow([
                             $sku,
+                            $entry['entity_id'] ?? null,
+                            $mediaFetch['value_id'] ?? null,
+                            $mediaValue,
                             $this->imagePath . $mediaValue
                         ]);
                     }
