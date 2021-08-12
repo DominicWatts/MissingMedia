@@ -20,6 +20,6 @@ To also render output in a console table use verbose output
 
     php bin/magento xigen:missingmedia:scan -v 
 
-Check `xigen/missing-product-image-export.csv`
+Check `./pub/media/xigen/missing-product-image-export.csv`
 
 Create `./pub/media/xigen` if not exist
