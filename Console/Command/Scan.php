@@ -11,6 +11,7 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\App\State;
+use Magento\Framework\Console\Cli;
 use Magento\Framework\File\Csv;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Filesystem\Driver\File;
@@ -21,7 +22,9 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\ProgressBarFactory;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class Scan extends Command
 {
@@ -29,6 +32,7 @@ class Scan extends Command
     const ROW_DELIMITER = ",";
     const ROW_ENCLOSURE = '"';
     const ROW_END = "\n";
+    const DELETE_OPTION = 'delete';
 
     /**
      * @var \Psr\Log\LoggerInterface
@@ -143,6 +147,8 @@ class Scan extends Command
         $this->output = $output;
         $this->state->setAreaCode(Area::AREA_GLOBAL);
 
+        $delete = $this->input->getOption(self::DELETE_OPTION) ? true : false;
+
         $this->mediaPath = $this->filesystem
             ->getDirectoryRead(DirectoryList::MEDIA)
             ->getAbsolutePath();
@@ -150,6 +156,18 @@ class Scan extends Command
         $this->imagePath = $this->mediaPath . 'catalog' . DIRECTORY_SEPARATOR . 'product';
 
         $this->exportPath = $this->mediaPath . self::FILE_PATH;
+
+        if ($delete) {
+            $helper = $this->getHelper('question');
+            $question = new ConfirmationQuestion(
+                (string) __('You are about to delete product gallery data. Are you sure? [y/N]'),
+                false
+            );
+
+            if (!$helper->ask($this->input, $this->output, $question) && $this->input->isInteractive()) {
+                return Cli::RETURN_FAILURE;
+            }
+        }
 
         $this->output->writeln((string) __(
             '[%1] Start',
@@ -193,13 +211,17 @@ class Scan extends Command
                 ));
 
                 if (!$this->file->isExists($this->imagePath . $mediaValue)) {
-                    $missing[] = [
-                        'sku' => $sku,
-                        'entity_id' => $entry['entity_id'] ?? null,
-                        'value_id' => $mediaFetch['value_id'] ?? null,
-                        'asset' => $mediaValue,
-                        'path' => $this->imagePath . $mediaValue
-                    ];
+                    if ($delete) {
+                        $this->removeMediaEntry($mediaFetch['value_id']);
+                    } else {
+                        $missing[] = [
+                            'sku' => $sku,
+                            'entity_id' => $entry['entity_id'] ?? null,
+                            'value_id' => $mediaFetch['value_id'] ?? null,
+                            'asset' => $mediaValue,
+                            'path' => $this->imagePath . $mediaValue
+                        ];
+                    }
 
                     if ($output->getVerbosity() !== OutputInterface::VERBOSITY_NORMAL) {
                         $table->addRow([
@@ -215,12 +237,21 @@ class Scan extends Command
             $progress->advance();
         }
 
-        $this->generateFile($missing, self::ROW_ENCLOSURE, self::ROW_DELIMITER, $this->exportPath);
-
+        if (!$delete) {
+            $this->generateFile($missing, self::ROW_ENCLOSURE, self::ROW_DELIMITER, $this->exportPath);
+        }
+        
         $progress->finish();
         $this->output->writeln('');
 
         if ($output->getVerbosity() !== OutputInterface::VERBOSITY_NORMAL) {
+            if ($delete) {
+                $this->output->writeln((string) __(
+                    '[%1] Removed the following entries',
+                    $this->dateTime->gmtDate()
+                ));
+                $this->output->writeln('');
+            }
             $table->render();
         }
 
@@ -287,6 +318,24 @@ class Scan extends Command
         return $data[0] ?? null;
     }
 
+    public function removeMediaEntry($valueId)
+    {
+        $tableName = $this->resource->getTableName('catalog_product_entity_media_gallery');
+        $select = $this->connection
+            ->select()
+            ->from($tableName)
+            ->where('value_id = ?', $valueId);
+
+        try {
+            // deliberate empty second argument
+            $query = $this->connection->deleteFromSelect($select, []);
+            $statement = $this->connection->query($query);
+            return $statement->rowCount();
+        } catch (\Exception $e) {
+            $this->logger->critical($e);
+        }
+    }
+
     /**
      * Generate file
      * @param arary $entries
@@ -335,11 +384,16 @@ class Scan extends Command
 
     /**
      * {@inheritdoc}
+     * xigen:missingmedia:scan [-d|--delete DELETE]
+     * xigen:missingmedia:scan -d 1
      */
     protected function configure()
     {
         $this->setName("xigen:missingmedia:scan");
         $this->setDescription("Scan media gallery entries for images that are missing");
+        $this->setDefinition([
+            new InputOption(self::DELETE_OPTION, '-d', InputOption::VALUE_OPTIONAL, 'Delete'),
+        ]);
         parent::configure();
     }
 }
