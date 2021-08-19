@@ -3,7 +3,7 @@
     "description": "Scan and dump media gallery entries for images that are missing due to migration or data loss",
     "type": "magento2-module",
     "license": "OSL-3.0",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "authors": [
         {
             "name": "Dominic",

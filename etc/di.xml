@@ -3,7 +3,8 @@
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
-                <item name="Scan" xsi:type="object">Xigen\MissingMedia\Console\Command\Scan</item>
+                <item name="MissingMedia_Scan" xsi:type="object">Xigen\MissingMedia\Console\Command\Scan</item>
+                <item name="MissingMedia_Missing" xsi:type="object">Xigen\MissingMedia\Console\Command\Missing</item>
             </argument>
         </arguments>
     </type>
