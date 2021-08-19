@@ -3,7 +3,7 @@
     "description": "Scan and dump media gallery entries for images that are missing due to migration or data loss",
     "type": "magento2-module",
     "license": "OSL-3.0",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "authors": [
         {
             "name": "Dominic",
@@ -19,7 +19,9 @@
     ],
     "require": {
         "magento/framework": "*",
-        "php": "~7.1.0||~7.2.0||~7.3.0",
+        "magento/module-catalog": "*",
+        "magento/module-store": "*",
+        "php": ">=7.1.0",
         "symfony/console": "*"
     },
     "autoload": {

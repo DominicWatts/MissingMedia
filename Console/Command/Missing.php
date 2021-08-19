@@ -7,6 +7,9 @@ declare(strict_types=1);
 
 namespace Xigen\MissingMedia\Console\Command;
 
+use Magento\Catalog\Api\Data\ProductAttributeInterface;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
+use Magento\Framework\Api\SortOrder;
 use Magento\Framework\App\Area;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\ResourceConnection;
@@ -16,11 +19,13 @@ use Magento\Framework\File\Csv;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Filesystem\Driver\File;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Store\Model\Store;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\ProgressBarFactory;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -28,6 +33,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class Missing extends Command
 {
+    const ENABLED_ARGUMENT = 'enabled';
     const FILE_PATH = 'xigen/no-product-image-export.csv';
     const ROW_DELIMITER = ",";
     const ROW_ENCLOSURE = '"';
@@ -154,12 +160,20 @@ class Missing extends Command
 
         $this->exportPath = $this->mediaPath . self::FILE_PATH;
 
+        $enabledOnly = $this->input->getArgument(self::ENABLED_ARGUMENT) ?: false;
+
         $this->output->writeln((string) __(
             '[%1] Start',
             $this->dateTime->gmtDate()
         ));
 
-        $mediaEntries = $this->getProductsWithNoMedia();
+        $this->output->writeln((string) __(
+            '[%1] Fetching no media products with %2 status',
+            $this->dateTime->gmtDate(),
+            $enabledOnly ? 'enabled' : 'any'
+        ));
+
+        $mediaEntries = $this->getProductsWithNoMedia($enabledOnly);
 
         $table = new Table($this->output);
 
@@ -223,10 +237,37 @@ class Missing extends Command
     }
 
     /**
+     * get status attribute ID
+     * @return array
+     */
+    public function getStatusAttributeId()
+    {
+        $ea = $this->resource->getTableName('eav_attribute');
+        $eet = $this->resource->getTableName('eav_entity_type');
+        $select = $this->connection->select()->from(
+            ['ea' => $ea],
+            ['ea.attribute_id']
+        )->joinLeft(
+            ['eet' => $eet],
+            'ea.entity_type_id = eet.entity_type_id',
+            ['']
+        )->where(
+            'ea.attribute_code =?',
+            ProductAttributeInterface::CODE_STATUS
+        )->where(
+            'eet.entity_type_code =?',
+            ProductAttributeInterface::ENTITY_TYPE_CODE
+        );
+
+        $data = $this->connection->fetchOne($select);
+        return (int) $data ?? null;
+    }
+
+    /**
      * Find products with no media entries
      * @return array
      */
-    public function getProductsWithNoMedia()
+    public function getProductsWithNoMedia($enabledOnly = false)
     {
         $cpe = $this->resource->getTableName('catalog_product_entity');
         $cpemg = $this->resource->getTableName('catalog_product_entity_media_gallery');
@@ -246,10 +287,34 @@ class Missing extends Command
             'cpe.entity_id'
         )->having(
             'count = 0'
+        )->order(
+            'cpe.type_id',
+            SortOrder::SORT_ASC
+        )->order(
+            'cpe.sku',
+            SortOrder::SORT_ASC
         );
 
+        if ($enabledOnly == true) {
+            $cpei = $this->resource->getTableName('catalog_product_entity_int');
+            $select->joinLeft(
+                ['cpei' => $cpei],
+                'cpe.entity_id = cpei.entity_id',
+                ['']
+            )->where(
+                'cpei.attribute_id = ?',
+                $this->getStatusAttributeId()
+            )->where(
+                'cpei.store_id = ?',
+                Store::DEFAULT_STORE_ID
+            )->where(
+                'cpei.value = ?',
+                Status::STATUS_ENABLED
+            );
+        }
+
         $data = $this->connection->fetchAll($select);
-        return $data ?? null;
+        return $data ?? [];
     }
 
     /**
@@ -300,12 +365,15 @@ class Missing extends Command
 
     /**
      * {@inheritdoc}
-     * xigen:missingmedia:missing
+     * xigen:missingmedia:missing [--] <enabled>
      */
     protected function configure()
     {
         $this->setName("xigen:missingmedia:missing");
         $this->setDescription("Find products with no images");
+        $this->setDefinition([
+            new InputArgument(self::ENABLED_ARGUMENT, InputArgument::OPTIONAL, 'Generate'),
+        ]);
         parent::configure();
     }
 }
