@@ -14,7 +14,7 @@ Search for products with no media entries.
 
 ## Usage instructions
 
-### Find and resolve images with missing media
+### Find and resolve products with missing media in file system
 
     xigen:missingmedia:scan
 
@@ -32,7 +32,7 @@ To delete entries with missing media use -d parameter
 
 php bin/magento xigen:missingmedia:scan -d true
 
-###  Find images with no media entries
+###  Find products with no media entries
 
     xigen:missingmedia:missing [--] <enabled>
 
