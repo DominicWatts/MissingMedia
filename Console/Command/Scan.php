@@ -240,7 +240,7 @@ class Scan extends Command
         if (!$delete) {
             $this->generateFile($missing, self::ROW_ENCLOSURE, self::ROW_DELIMITER, $this->exportPath);
         }
-        
+
         $progress->finish();
         $this->output->writeln('');
 

@@ -1,5 +1,14 @@
 # Magento 2 Dump Missing image entries
 
+![phpcs](https://github.com/DominicWatts/MissingMedia/workflows/phpcs/badge.svg)
+
+![PHPCompatibility](https://github.com/DominicWatts/MissingMedia/workflows/PHPCompatibility/badge.svg)
+
+![PHPStan](https://github.com/DominicWatts/MissingMedia/workflows/PHPStan/badge.svg)
+
+![php-cs-fixer](https://github.com/DominicWatts/MissingMedia/workflows/php-cs-fixer/badge.svg)
+
+
 Scan and dump media gallery entries for images that are missing due to migration or data loss.
 
 Search for products with no media entries.

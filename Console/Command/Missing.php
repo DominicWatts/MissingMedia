@@ -14,7 +14,6 @@ use Magento\Framework\App\Area;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\App\State;
-use Magento\Framework\Console\Cli;
 use Magento\Framework\File\Csv;
 use Magento\Framework\Filesystem;
 use Magento\Framework\Filesystem\Driver\File;
@@ -27,9 +26,7 @@ use Symfony\Component\Console\Helper\ProgressBarFactory;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class Missing extends Command
 {
@@ -151,7 +148,7 @@ class Missing extends Command
         $this->input = $input;
         $this->output = $output;
         $this->state->setAreaCode(Area::AREA_GLOBAL);
-        
+
         $this->mediaPath = $this->filesystem
             ->getDirectoryRead(DirectoryList::MEDIA)
             ->getAbsolutePath();
@@ -197,13 +194,12 @@ class Missing extends Command
 
         $missing = [];
         foreach ($mediaEntries as $entry) {
-            
             $progress->setMessage((string) __(
                 'Product [%1] : %2 ',
                 $entry['entity_id'] ?? null,
                 $entry['sku']
             ));
-                            
+
             $missing[] = [
                 'sku' => $entry['sku'] ?? null,
                 'entity_id' => $entry['entity_id'] ?? null,
@@ -217,12 +213,12 @@ class Missing extends Command
                     'type_id' => $entry['type_id'] ?? null
                 ]);
             }
-            
+
             $progress->advance();
         }
 
         $this->generateFile($missing, self::ROW_ENCLOSURE, self::ROW_DELIMITER, $this->exportPath);
-        
+
         $progress->finish();
         $this->output->writeln('');
 
