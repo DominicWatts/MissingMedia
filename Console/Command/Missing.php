@@ -72,11 +72,6 @@ class Missing extends Command
     protected $mediaPath;
 
     /**
-     * @var string
-     */
-    protected $imagePath;
-
-    /**
      * @var \Magento\Framework\Filesystem
      */
     protected $filesystem;
@@ -152,8 +147,6 @@ class Missing extends Command
         $this->mediaPath = $this->filesystem
             ->getDirectoryRead(DirectoryList::MEDIA)
             ->getAbsolutePath();
-
-        $this->imagePath = $this->mediaPath . 'catalog' . DIRECTORY_SEPARATOR . 'product';
 
         $this->exportPath = $this->mediaPath . self::FILE_PATH;
 
