@@ -39,7 +39,7 @@ Create `./pub/media/xigen` if not exist
 
 To delete entries with missing media use -d parameter
 
-php bin/magento xigen:missingmedia:scan -d true
+    php bin/magento xigen:missingmedia:scan -d true
 
 ###  Find products with no media entries
 
