@@ -45,7 +45,7 @@ To delete entries with missing media use -d parameter
 
     xigen:missingmedia:missing [--] <enabled>
 
-php bin/magento xigen:missingmedia:missing
+    php bin/magento xigen:missingmedia:missing
 
 To also render output in a console table use verbose output
 
