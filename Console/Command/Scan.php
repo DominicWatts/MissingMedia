@@ -28,7 +28,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 
 class Scan extends Command
 {
-    const FILE_PATH = 'xigen/missing-product-image-export.csv';
+    const FILE_PATH = 'xigen/missing-product-image-export';
     const FILE_EXT = '.csv';
     const ROW_DELIMITER = ",";
     const ROW_ENCLOSURE = '"';
