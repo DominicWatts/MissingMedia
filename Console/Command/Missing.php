@@ -31,7 +31,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Missing extends Command
 {
     const ENABLED_ARGUMENT = 'enabled';
-    const FILE_PATH = 'xigen/no-product-image-export.csv';
+    const FILE_PATH = 'xigen/no-product-image-export';
+    const FILE_EXT = '.csv';
     const ROW_DELIMITER = ",";
     const ROW_ENCLOSURE = '"';
     const ROW_END = "\n";
@@ -155,7 +156,7 @@ class Missing extends Command
 
         $this->imagePath = $this->mediaPath . 'catalog' . DIRECTORY_SEPARATOR . 'product';
 
-        $this->exportPath = $this->mediaPath . self::FILE_PATH;
+        $this->exportPath = $this->mediaPath . self::FILE_PATH . '_' . date('Y_m_d') . self::FILE_EXT;
 
         $enabledOnly = $this->input->getArgument(self::ENABLED_ARGUMENT) ?: false;
 
