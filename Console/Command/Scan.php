@@ -29,6 +29,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
 class Scan extends Command
 {
     const FILE_PATH = 'xigen/missing-product-image-export.csv';
+    const FILE_EXT = '.csv';
     const ROW_DELIMITER = ",";
     const ROW_ENCLOSURE = '"';
     const ROW_END = "\n";
@@ -155,7 +156,7 @@ class Scan extends Command
 
         $this->imagePath = $this->mediaPath . 'catalog' . DIRECTORY_SEPARATOR . 'product';
 
-        $this->exportPath = $this->mediaPath . self::FILE_PATH;
+        $this->exportPath = $this->mediaPath . self::FILE_PATH . '_' . date('Y_m_d') . self::FILE_EXT;
 
         if ($delete) {
             $helper = $this->getHelper('question');
